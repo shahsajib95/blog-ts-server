@@ -1,0 +1,80 @@
+import { Request, Response } from "express";
+import { base64 } from "../middleware/imageToBase64";
+import Blogs from "../models/blogModel";
+
+const blogCtrl = {
+  post: async (req: Request, res: Response) => {
+    try {
+      const { title, body, user, tags } = req.body;
+      const file = req.files?.file;
+      await base64(file)
+        .then(async (newFileInfo: any) => {
+          // newFileInfo holds the output file properties
+          const buf = await Buffer.from(newFileInfo, "base64");
+          const finalImg = await buf.toString("base64");
+          const blog = new Blogs({
+            title,
+            body,
+            thumbnail: finalImg,
+            user,
+            tags,
+          });
+          const result = await blog.save();
+          return res.json(result);
+        })
+        .catch(function (err: any) {
+          return res.status(500).json({ err: "Can not upload image" });
+        });
+    } catch (err: any) {
+      console.log(err);
+      return res.status(500).json({ err: err.message });
+    }
+  },
+  details: async (req: Request, res: Response) => {
+    try {
+      const { id } = req.params;
+      const blog = await Blogs.find({ _id: id }).populate(
+        "user",
+        "_id name avatar"
+      );
+      return res.json(blog);
+    } catch (err: any) {
+      console.log(err);
+      return res.status(500).json({ err: err.message });
+    }
+  },
+  getRecent: async (req: Request, res: Response) => {
+    try {
+      const blog = await Blogs.find({})
+        .sort({ _id: -1 })
+        .populate("user", "_id name avatar");
+      return res.json(blog);
+    } catch (err: any) {
+      console.log(err);
+      return res.status(500).json({ err: err.message });
+    }
+  },
+  getPopular: async (req: Request, res: Response) => {
+    try {
+      const blog = await Blogs.find({})
+        .sort({ love: -1 })
+        .populate("user", "_id name avatar");
+      return res.json(blog);
+    } catch (err: any) {
+      console.log(err);
+      return res.status(500).json({ err: err.message });
+    }
+  },
+  delete: async (req: Request, res: Response) => {
+    try {
+      const { id } = req.params;
+      const deleteBlog = await Blogs.findOneAndRemove({ _id: id });
+      return res.json(deleteBlog);
+    } catch (err: any) {
+      console.log(err);
+      return res.status(500).json({ err: err.message });
+    }
+  },
+};
+
+export default blogCtrl;
