@@ -50,7 +50,7 @@ const authCtrl = {
         return res.status(201).json({ err: "Please login now! No Cookies" });
 
       const result = await (<IDecodedToken>(
-        jwt.verify(token, `${process.env.REFRESH_TOKEN_SECRET}`)
+        jwt.verify(token, `${process.env.ACCESS_TOKEN_SECRET}`)
       ));
       if (!result.id)
         return res
