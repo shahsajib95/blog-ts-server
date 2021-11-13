@@ -6,16 +6,17 @@ import { generateAccessToken } from "../config/generateToken";
 import { IDecodedToken } from "../middleware/interface";
 
 const authCtrl = {
-  login: async(req: Request, res: Response) =>{
+  login: async (req: Request, res: Response) => {
     try {
       const { email, password } = req.body;
       const user = await Users.findOne({ email: email });
       if (!user) return res.status(201).json({ err: "Account does not exist" });
 
-      const isMatch = await bcrypt.compare(password, user.password)
+      const isMatch = await bcrypt.compare(password, user.password);
 
-      if(!isMatch) return res.status(201).json({ err: 'Password does not match' });
-      
+      if (!isMatch)
+        return res.status(201).json({ err: "Password does not match" });
+
       const token = generateAccessToken({ id: user._id });
 
       return res.json({ ...user._doc, token });
@@ -43,16 +44,27 @@ const authCtrl = {
     }
   },
   accessToken: async (req: Request, res: Response) => {
-    const token = req.headers.authorization
-    if (!token) return res.status(201).json({ err: "Please login now! No Cookies" });
+    try {
+      const token = req.headers.authorization;
+      if (!token)
+        return res.status(201).json({ err: "Please login now! No Cookies" });
 
-    const result = await <IDecodedToken>jwt.verify(token, `${process.env.REFRESH_TOKEN_SECRET}`);
-    if (!result.id) return res.status(201).json({ err: "Please login now! Cookies different error" });
+      const result = await (<IDecodedToken>(
+        jwt.verify(token, `${process.env.REFRESH_TOKEN_SECRET}`)
+      ));
+      if (!result.id)
+        return res
+          .status(201)
+          .json({ err: "Please login now! Cookies different error" });
 
-    const user = await Users.findById(result.id).select("-password");
-    if (!user)
-    return res.status(201).json({ err: "This account does not exist." });
-    res.status(201).json(user);
+      const user = await Users.findById(result.id).select("-password");
+      if (!user)
+        return res.status(201).json({ err: "This account does not exist." });
+      res.status(201).json(user);
+    } catch (err: any) {
+      console.log(err);
+      return res.status(500).json({ err: err.message });
+    }
   },
 };
 
