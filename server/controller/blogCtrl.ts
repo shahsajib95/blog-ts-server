@@ -1,5 +1,6 @@
 import { Request, Response } from "express";
 import { base64 } from "../middleware/imageToBase64";
+import { Pagination } from "../middleware/paginate";
 import Blogs from "../models/blogModel";
 
 const blogCtrl = {
@@ -43,23 +44,15 @@ const blogCtrl = {
       return res.status(500).json({ err: err.message });
     }
   },
-  getRecent: async (req: Request, res: Response) => {
+  get: async (req: Request, res: Response) => {
     try {
-      const blog = await Blogs.find({})
-        .sort({ _id: -1 })
-        .populate("user", "_id name avatar");
-      return res.json(blog);
-    } catch (err: any) {
-      console.log(err);
-      return res.status(500).json({ err: err.message });
-    }
-  },
-  getPopular: async (req: Request, res: Response) => {
-    try {
-      const blog = await Blogs.find({})
-        .sort({ love: -1 })
-        .populate("user", "_id name avatar");
-      return res.json(blog);
+      const {type} = req.params
+      if(type === 'recent'){
+        getRecentBlog(req, res)
+      }else if (type === 'popular'){
+        getPopularBlog(req, res)
+      }
+     
     } catch (err: any) {
       console.log(err);
       return res.status(500).json({ err: err.message });
@@ -76,5 +69,30 @@ const blogCtrl = {
     }
   },
 };
+
+const getRecentBlog = async (req: Request, res: Response)=>{
+  const { skip, limit } = Pagination(req);
+
+  const count = await Blogs.count({});
+  const blog = await Blogs.find({})
+    .skip(skip)
+    .limit(limit)
+    .sort({ _id: -1 })
+    .populate("user", "_id name avatar");
+
+  return res.json({ blog, count });
+}
+const getPopularBlog = async (req: Request, res: Response)=>{
+  const { skip, limit } = Pagination(req);
+
+  const count = await Blogs.count({});
+  const blog = await Blogs.find({})
+    .skip(skip)
+    .limit(limit)
+    .sort({ love: -1 })
+    .populate("user", "_id name avatar");
+
+  return res.json({ blog, count });
+}
 
 export default blogCtrl;

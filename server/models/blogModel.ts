@@ -1,4 +1,5 @@
 import mongoose from "mongoose";
+import moment from 'moment'
 
 const blogSchema = new mongoose.Schema({
   title: {
@@ -25,8 +26,8 @@ const blogSchema = new mongoose.Schema({
     type: mongoose.Types.ObjectId,
     ref: "User",
   },
-  createdAt: { type: String, default: new Date() },
-  updatedAt: { type: String, default: new Date() },
+  createdAt: { type: String, default: moment().toISOString()},
+  updatedAt: { type: String, default: moment().toISOString()},
 });
 
 export default mongoose.model("Blog", blogSchema);

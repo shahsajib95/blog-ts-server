@@ -11,9 +11,9 @@ export const base64 = (file: any) => {
   };
 
   return sharp(image.image)
-    .resize(500, 250, {
+    .resize(750, 375, {
       fit: "cover",
-      position: "center",
+      position: "center"
     })
     .toBuffer()
     

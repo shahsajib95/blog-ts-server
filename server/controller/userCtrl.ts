@@ -36,6 +36,18 @@ const userCtrl = {
       return res.status(500).json({ msg: err.message });
     }
   },
+  avatar: async (req: Request, res: Response) => {
+    try {
+      const { id, avatar } = req.body;
+      const user = await Users.find({ id: id });
+      if (!user) return res.json({ err: "No Account found" });
+      const userData = await Users.updateOne({}, { avatar: avatar});
+      return res.json(userData);
+    } catch (err: any) {
+      console.log(err);
+      return res.status(500).json({ msg: err.message });
+    }
+  },
   blogs: async (req: Request, res: Response) => {
     try {
       const { id } = req.params;
