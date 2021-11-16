@@ -21,15 +21,20 @@ const userCtrl = {
   },
   patch: async (req: Request, res: Response) => {
     try {
-      const { id, email, name } = req.body;
-      const user = await Users.find({ id: id });
+      const { id } = req.params;
+      const { email, name } = req.body;
+      const user = await Users.find({ _id: id });
       if (!user) return res.json({ err: "No Account found" });
       const find = await Users.find({
         email: email,
         $in: new ID(id),
       });
       if (!find) return res.json({ err: "Email already exits" });
-      const userData = await Users.updateOne({}, { email: email, name: name });
+      const userData = await Users.updateOne(
+        { _id: new ID(id) },
+        { email: email, name: name },
+        { upsert: true }
+      );
       return res.json(userData);
     } catch (err: any) {
       console.log(err);
@@ -38,10 +43,16 @@ const userCtrl = {
   },
   avatar: async (req: Request, res: Response) => {
     try {
-      const { id, avatar } = req.body;
-      const user = await Users.find({ id: id });
+      const { id } = req.params;
+      const { avatar } = req.body;
+      const user = await Users.find({ _id: id });
       if (!user) return res.json({ err: "No Account found" });
-      const userData = await Users.updateOne({}, { avatar: avatar});
+      const userData = await Users.updateOne(
+        { _id: new ID(id) },
+        { avatar: avatar },
+        { upsert: true }
+      );
+      console.log(userData);
       return res.json(userData);
     } catch (err: any) {
       console.log(err);
