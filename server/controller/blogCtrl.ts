@@ -2,6 +2,10 @@ import { Request, Response } from "express";
 import { base64 } from "../middleware/imageToBase64";
 import { Pagination } from "../middleware/paginate";
 import Blogs from "../models/blogModel";
+import Likes from "../models/likeModel";
+import ObjectId from "mongoose";
+
+let ID = ObjectId.Types.ObjectId;
 
 const blogCtrl = {
   post: async (req: Request, res: Response) => {
@@ -62,6 +66,8 @@ const blogCtrl = {
     try {
       const { id } = req.params;
       const deleteBlog = await Blogs.findOneAndRemove({ _id: id });
+      const likeData = await Likes.findOneAndRemove({ blogId: new ID(id) });
+      console.log(likeData);
       return res.json(deleteBlog);
     } catch (err: any) {
       console.log(err);

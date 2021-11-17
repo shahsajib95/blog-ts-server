@@ -6,12 +6,14 @@ import cors from 'cors'
 import cookieParser from 'cookie-parser'
 import morgan from 'morgan'
 import fileUpload from 'express-fileupload'
+import compression from 'compression'
 import routes from './routes/index'
 
 
 const app = express()
-app.use(express.json({limit: '50mb'}));
-app.use(express.urlencoded({limit: '50mb'}));
+app.use(compression({level: 6, thershold: 100 * 1000}));
+app.use(express.json({limit: '5mb'}));
+app.use(express.urlencoded({limit: '5mb'}));
 app.use(cors({
   origin: `${process.env.BASE_URL}`,
   credentials: true

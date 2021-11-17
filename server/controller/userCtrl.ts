@@ -1,6 +1,7 @@
 import { Request, Response } from "express";
 import Users from "../models/userModel";
 import Blogs from "../models/blogModel";
+import { base64 } from "../middleware/imageToBase64";
 import ObjectId from "mongoose";
 
 let ID = ObjectId.Types.ObjectId;
@@ -44,16 +45,27 @@ const userCtrl = {
   avatar: async (req: Request, res: Response) => {
     try {
       const { id } = req.params;
-      const { avatar } = req.body;
       const user = await Users.find({ _id: id });
       if (!user) return res.json({ err: "No Account found" });
-      const userData = await Users.updateOne(
-        { _id: new ID(id) },
-        { avatar: avatar },
-        { upsert: true }
-      );
-      console.log(userData);
-      return res.json(userData);
+
+      const file = req.files?.file;
+
+      await base64(file)
+        .then(async (newFileInfo: any) => {
+          // newFileInfo holds the output file properties
+          const buf = await Buffer.from(newFileInfo, "base64");
+          const finalImg = await buf.toString("base64");
+          const userData = await Users.updateOne(
+            { _id: new ID(id) },
+            { avatar: finalImg },
+            { upsert: true }
+          );
+          return res.json(userData);
+        })
+        .catch(function (err: any) {
+          return res.status(500).json({ err: "Can not upload image" });
+        });
+
     } catch (err: any) {
       console.log(err);
       return res.status(500).json({ msg: err.message });
