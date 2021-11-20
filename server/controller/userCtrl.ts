@@ -74,7 +74,7 @@ const userCtrl = {
   blogs: async (req: Request, res: Response) => {
     try {
       const { id } = req.params;
-      const blogsData = await Blogs.find({ user: new ID(id) });
+      const blogsData = await Blogs.find({ user: new ID(id) }).select('-thumbnail').sort({ _id: -1 });
       if (!blogsData) return res.json({ err: "No Blog Found" });
       return res.json(blogsData);
     } catch (err: any) {

@@ -50,13 +50,32 @@ const blogCtrl = {
   },
   get: async (req: Request, res: Response) => {
     try {
-      const {type} = req.params
-      if(type === 'recent'){
-        getRecentBlog(req, res)
-      }else if (type === 'popular'){
-        getPopularBlog(req, res)
+      const { type } = req.params;
+      if (type === "recent") {
+        getRecentBlog(req, res);
+      } else if (type === "popular") {
+        getPopularBlog(req, res);
       }
-     
+    } catch (err: any) {
+      console.log(err);
+      return res.status(500).json({ err: err.message });
+    }
+  },
+  search: async (req: Request, res: Response) => {
+    try {
+      const { title } = req.query;
+      const { skip, limit } = Pagination(req);
+
+      let regex = new RegExp(title as string, 'i');
+
+      const count = await Blogs.count({title: regex });
+      const blog = await Blogs.find({title:  regex })
+      .skip(skip)
+      .limit(limit)
+      .sort({ _id: -1 })
+      .populate("user", "_id name avatar");
+      
+      return res.json({ blog, count });
     } catch (err: any) {
       console.log(err);
       return res.status(500).json({ err: err.message });
@@ -76,7 +95,7 @@ const blogCtrl = {
   },
 };
 
-const getRecentBlog = async (req: Request, res: Response)=>{
+const getRecentBlog = async (req: Request, res: Response) => {
   const { skip, limit } = Pagination(req);
 
   const count = await Blogs.count({});
@@ -87,8 +106,8 @@ const getRecentBlog = async (req: Request, res: Response)=>{
     .populate("user", "_id name avatar");
 
   return res.json({ blog, count });
-}
-const getPopularBlog = async (req: Request, res: Response)=>{
+};
+const getPopularBlog = async (req: Request, res: Response) => {
   const { skip, limit } = Pagination(req);
 
   const count = await Blogs.count({});
@@ -99,6 +118,6 @@ const getPopularBlog = async (req: Request, res: Response)=>{
     .populate("user", "_id name avatar");
 
   return res.json({ blog, count });
-}
+};
 
 export default blogCtrl;
