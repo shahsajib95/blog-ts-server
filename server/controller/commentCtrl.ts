@@ -23,8 +23,8 @@ const commentCtrl = {
         user,
         createdAt: new Date().toISOString(),
       };
-
-      io.emit('createComment', data)
+  
+      io.to(`${blog_id}`).emit('createComment', data)
 
       await newComment.save();
       return res.json(newComment);
@@ -163,7 +163,7 @@ const commentCtrl = {
         createdAt: new Date().toISOString()
       }
 
-      io.emit('replyComment', data)
+      io.to(`${blog_id}`).emit('replyComment', data)
 
       await newComment.save()
 
