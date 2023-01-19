@@ -6,6 +6,7 @@ import { Pagination } from "../middleware/paginate";
 
 let ID = ObjectId.Types.ObjectId;
 
+// console.log("test")
 const commentCtrl = {
   createComment: async (req: Request, res: Response) => {
     try {
